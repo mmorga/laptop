@@ -2,6 +2,7 @@ Laptop
 ======
 
 Laptop is a script to set up an OS X laptop for Rails development.
+It's been modified from Thoughbot's version to suit my needs.
 
 Requirements
 ------------
@@ -19,15 +20,12 @@ Install
 
 Read, then run the script:
 
-    bash <(curl -s https://raw.githubusercontent.com/thoughtbot/laptop/master/mac) 2>&1 | tee ~/laptop.log
+    bash <(curl -s https://raw.githubusercontent.com/mmorga/laptop/master/mac)
 
 Debugging
 ---------
 
-Your last Laptop run will be saved to `~/laptop.log`. Read through it to see if
-you can debug the issue yourself. If not, copy the lines where the script
-failed into a [new GitHub
-Issue](https://github.com/thoughtbot/laptop/issues/new) for us. Or, attach the
+Read through it to see if you can debug the issue yourself. If not, copy the lines where the script failed into a [new GitHub Issue](https://github.com/mmorga/laptop/issues/new) for us. Or, attach the
 whole log file as an attachment.
 
 What it sets up
@@ -37,13 +35,10 @@ What it sets up
 * [Exuberant Ctags] for indexing files for vim tab completion
 * [Foreman] for serving Rails apps locally
 * [gh] for interacting with the GitHub API
-* [Heroku Config] for local `ENV` variables
-* [Heroku Toolbelt] for interacting with the Heroku API
 * [Homebrew] for managing operating system libraries
 * [ImageMagick] for cropping and resizing images
 * [Node.js] and [NPM], for running apps and installing JavaScript packages
 * [NVM] for managing versions of Node.js
-* [Parity] for development, staging, and production parity
 * [Postgres] for storing relational data
 * [Qt] for headless JavaScript testing via Capybara Webkit
 * [Rails] gem for writing web applications
