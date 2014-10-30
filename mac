@@ -332,8 +332,8 @@ for egg in "${python_eggs[@]}"; do
   echo -n "$egg..."
   if ! containsElement "$egg" "${installed_eggs[@]}"; then
     if ! containsElement "$egg" "${outdated_eggs[@]}"; then
-      pip install --upgrade "$@"
-      echo "  Upgraded $@"
+      pip install --upgrade "$egg"
+      echo "  Upgraded $egg"
       outdated_eggs=$(pip list -o)
     fi
   else
