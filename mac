@@ -13,11 +13,11 @@
 brew_formulae=(postgresql redis the_silver_searcher vim ctags tmux
                reattach-to-user-namespace imagemagick qt watch gh nvm rbenv
                rbenv-gem-rehash ruby-build colordiff curl docker elasticsearch
-               erlang git go graphviz inkscape mackup mercurial mysql node
-               pandoc perl phantomjs pyenv-virtualenv pyenv-virtualenvwrapper python
+               erlang git go graphviz inkscape mackup mercurial mysql pandoc
+               perl phantomjs pyenv-virtualenv pyenv-virtualenvwrapper python
                rbenv-binstubs rbenv-bundler rbenv-gem-rehash ruby-build
                selenium-server-standalone wget xclip zsh zsh-completions
-               zsh-syntax-highlighting caskroom/cask/brew-cask)
+               zsh-syntax-highlighting)
 
 #  _                                       _
 # | |__  _ __ _____      __   ___ __ _ ___| | _____
@@ -84,6 +84,14 @@ append_to_zshrc() {
   fi
 }
 
+containsElement () {
+  local e
+
+  array=( `echo "${@:2}"` )
+  for e in "${array[@]}"; do [[ "$e" == "$1" ]] && return 0; done
+  return 1
+}
+
 update_installed_list() {
   installed=$(brew list)
 }
@@ -93,8 +101,8 @@ update_outdated_list() {
 }
 
 brew_install_or_upgrade() {
-  if [[ -z $(echo "$installed" | grep -Fqx "$1") ]]; then
-    if [[ -n $(echo "$outdated" | grep -Fqx "$1") ]]; then
+  if containsElement "$1" "${installed[@]}"; then
+    if containsElement "$1" "${outdated[@]}"; then
       brew upgrade "$@"
       echo "  Upgraded $@"
       update_outdated_list
@@ -163,6 +171,13 @@ for formula in "${brew_formulae[@]}"; do
   echo -n "$formula..."
   brew_install_or_upgrade $formula
 done
+if containsElement "brew-cask" "${installed[@]}"; then
+  if containsElement "brew-cask" "${outdated[@]}"; then
+    brew upgrade caskroom/cask/brew-cask
+  fi
+else
+  brew upgrade caskroom/cask/brew-cask
+fi
 
 echo
 echo
@@ -283,7 +298,7 @@ fancy_echo "Installing Standard Rubygems ..."
 echo -n "Checking gems: "
 for gem in "${rubygems[@]}"; do
   echo -n "$gem..."
-  if [[ ! -z $(echo "$installed_gems" | grep -Fqx "$1") ]]; then
+  if ! containsElement "$gem" "${installed_gems[@]}"; then
     gem install $gem
     echo "  Installed $@"
     installed_gems=$(gem list --no-versions)
@@ -315,8 +330,8 @@ fancy_echo "Installing Standard Python eggs ..."
 echo -n "Checking eggs: "
 for egg in "${python_eggs[@]}"; do
   echo -n "$egg..."
-  if [[ -z $(echo "$installed_eggs" | grep -Fqx "$egg") ]]; then
-    if [[ -n $(echo "$outdated_eggs" | grep -Fqx "$egg") ]]; then
+  if ! containsElement "$egg" "${installed_eggs[@]}"; then
+    if ! containsElement "$egg" "${outdated_eggs[@]}"; then
       pip install --upgrade "$@"
       echo "  Upgraded $@"
       outdated_eggs=$(pip list -o)
