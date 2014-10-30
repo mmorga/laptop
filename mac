@@ -161,7 +161,7 @@ update_outdated_list
 echo -n "Checking formulae: "
 for formula in "${brew_formulae[@]}"; do
   echo -n "$formula..."
-  $(brew_install_or_upgrade $formula)
+  brew_install_or_upgrade $formula
 done
 
 echo
