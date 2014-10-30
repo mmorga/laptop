@@ -51,10 +51,11 @@ rubygems=(bundler gemedit guard guard-rake guard-shell hirb jekyll json json-sch
 # |  __/| |_| | |_| | | | (_) | | | | |__| (_| | (_| \__ \
 # |_|    \__, |\__|_| |_|\___/|_| |_|_____\__, |\__, |___/
 #        |___/                            |___/ |___/
-python_eggs=(python-ceilometerclient python-cinderclient python-commonclient
+python_eggs=(python-ceilometerclient python-cinderclient
              python-glanceclient python-heatclient python-keystoneclient
              python-neutronclient python-novaclient python-saharaclient
              python-swiftclient python-troveclient)
+# TODO: not found:  python-commonclient
 #   __                  _   _
 #  / _|_   _ _ __   ___| |_(_) ___  _ __  ___
 # | |_| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
@@ -337,8 +338,8 @@ for egg in "${python_eggs[@]}"; do
       outdated_eggs=$(pip list -o)
     fi
   else
-    pip install "$@"
-    echo "  Installed $@"
+    pip install "$egg"
+    echo "  Installed $egg"
     installed_eggs=$(pip list)
   fi
 done
