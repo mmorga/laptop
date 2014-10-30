@@ -4,6 +4,63 @@
 # Be prepared to turn your laptop (or desktop, no haters here)
 # into an awesome development machine.
 
+#  _                          __                            _
+# | |__  _ __ _____      __  / _| ___  _ __ _ __ ___  _   _| | __ _  ___
+# | '_ \| '__/ _ \ \ /\ / / | |_ / _ \| '__| '_ ` _ \| | | | |/ _` |/ _ \
+# | |_) | | |  __/\ V  V /  |  _| (_) | |  | | | | | | |_| | | (_| |  __/
+# |_.__/|_|  \___| \_/\_/   |_|  \___/|_|  |_| |_| |_|\__,_|_|\__,_|\___|
+# These are the apps installed by Homebrew
+brew_formulae=(postgresql redis the_silver_searcher vim ctags tmux
+               reattach-to-user-namespace imagemagick qt watch gh nvm rbenv
+               rbenv-gem-rehash ruby-build colordiff curl docker elasticsearch
+               erlang git go graphviz inkscape mackup mercurial mysql node
+               pandoc perl phantomjs pyenv-virtualenv pyenv-virtualenvwrapper python
+               rbenv-binstubs rbenv-bundler rbenv-gem-rehash ruby-build
+               selenium-server-standalone wget xclip zsh zsh-completions
+               zsh-syntax-highlighting caskroom/cask/brew-cask)
+
+#  _                                       _
+# | |__  _ __ _____      __   ___ __ _ ___| | _____
+# | '_ \| '__/ _ \ \ /\ / /  / __/ _` / __| |/ / __|
+# | |_) | | |  __/\ V  V /  | (_| (_| \__ \   <\__ \
+# |_.__/|_|  \___| \_/\_/    \___\__,_|___/_|\_\___/
+# These are mac apps that brew cask can manage
+brew_casks=(adium anvil atom audacity battery-guardian box-sync dash
+            firefox gimp github gitx-rowanj google-chrome intellij-idea iterm2
+            java launchrocket limechat livereload protege skitch skype vagrant
+            vagrant-manager virtualbox)
+# TODO: caffeine is failing to download today
+
+npm_packages=(grunt-cli bower protractor mocha styledocco chai chai-as-promised
+              karma selenium-webdriver astrolabe gulp)
+
+#  ____        _            ____
+# |  _ \ _   _| |__  _   _ / ___| ___ _ __ ___  ___
+# | |_) | | | | '_ \| | | | |  _ / _ \ '_ ` _ \/ __|
+# |  _ <| |_| | |_) | |_| | |_| |  __/ | | | | \__ \
+# |_| \_\\__,_|_.__/ \__, |\____|\___|_| |_| |_|___/
+#                    |___/
+rubygems=(bundler gemedit guard guard-rake guard-shell hirb jekyll json json-schema
+          jsonpath libv8 minitest minitest-colorize minitest-context
+          minitest-documentation pg pry pry-byebug pry-nav pry-rails rails
+          rb-fsevent rb-inotify sinatra therubyracer thin thor wraith)
+
+#  ____        _   _                 _____
+# |  _ \ _   _| |_| |__   ___  _ __ | ____|__ _  __ _ ___
+# | |_) | | | | __| '_ \ / _ \| '_ \|  _| / _` |/ _` / __|
+# |  __/| |_| | |_| | | | (_) | | | | |__| (_| | (_| \__ \
+# |_|    \__, |\__|_| |_|\___/|_| |_|_____\__, |\__, |___/
+#        |___/                            |___/ |___/
+python_eggs=(python-ceilometerclient python-cinderclient python-commonclient
+             python-glanceclient python-heatclient python-keystoneclient
+             python-neutronclient python-novaclient python-saharaclient
+             python-swiftclient python-troveclient)
+#   __                  _   _
+#  / _|_   _ _ __   ___| |_(_) ___  _ __  ___
+# | |_| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
+# |  _| |_| | | | | (__| |_| | (_) | | | \__ \
+# |_|  \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
+#
 fancy_echo() {
   printf "\n%b\n" "$1"
 }
@@ -27,54 +84,30 @@ append_to_zshrc() {
   fi
 }
 
-trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
+update_installed_list() {
+  installed=$(brew list)
+}
 
-set -e
-
-if [[ ! -d "$HOME/.bin/" ]]; then
-  mkdir "$HOME/.bin"
-fi
-
-if [ ! -f "$HOME/.zshrc" ]; then
-  touch "$HOME/.zshrc"
-fi
-
-append_to_zshrc 'export PATH="$HOME/.bin:$PATH"'
-
-if [[ "$SHELL" != */zsh ]]; then
-  fancy_echo "Changing your shell to zsh ..."
-    chsh -s $(which zsh)
-fi
+update_outdated_list() {
+  outdated=$(brew outdated)
+}
 
 brew_install_or_upgrade() {
-  if brew_is_installed "$1"; then
-    if brew_is_upgradable "$1"; then
+  if [[ -z $(echo "$installed" | grep -Fqx "$1") ]]; then
+    if [[ -n $(echo "$outdated" | grep -Fqx "$1") ]]; then
       brew upgrade "$@"
+      echo "  Upgraded $@"
+      update_outdated_list
     fi
   else
     brew install "$@"
+    echo "  Installed $@"
+    update_installed_list
   fi
 }
 
-brew_is_installed() {
-  local NAME=$(brew_expand_alias "$1")
-
-  brew list -1 | grep -Fqx "$NAME"
-}
-
-brew_is_upgradable() {
-  local NAME=$(brew_expand_alias "$1")
-
-  brew outdated --quiet "$NAME" >/dev/null
-  [[ $? -ne 0 ]]
-}
-
-brew_expand_alias() {
-  brew info "$1" 2>/dev/null | head -1 | awk '{gsub(/:/, ""); print $1}'
-}
-
 brew_launchctl_restart() {
-  local NAME=$(brew_expand_alias "$1")
+  local NAME="$1"
   local DOMAIN="homebrew.mxcl.$NAME"
   local PLIST="$DOMAIN.plist"
 
@@ -86,6 +119,28 @@ brew_launchctl_restart() {
   fi
   launchctl load ~/Library/LaunchAgents/$PLIST >/dev/null
 }
+
+echo " ___ _     _                _                  "
+echo "|_ _| |_  | |__   ___  __ _(_)_ __  ___        "
+echo " | || __| | '_ \ / _ \/ _\` | | '_ \/ __|       "
+echo " | || |_  | |_) |  __/ (_| | | | | \__ \_ _ _  "
+echo "|___|\__| |_.__/ \___|\__, |_|_| |_|___(_|_|_) "
+echo "                      |___/                    "
+echo
+
+fancy_echo "Checking for xcode command line tools"
+xcode-select --install
+
+trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
+
+set -e
+
+echo "  _   _                      _                         "
+echo " | | | | ___  _ __ ___   ___| |__  _ __ _____      __  "
+echo " | |_| |/ _ \| '_ \` _ \ / _ \ '_ \| '__/ _ \ \ /\ / / "
+echo " |  _  | (_) | | | | | |  __/ |_) | | |  __/\ V  V /   "
+echo " |_| |_|\___/|_| |_| |_|\___|_.__/|_|  \___| \_/\_/    "
+echo
 
 if ! command -v brew >/dev/null; then
   fancy_echo "Installing Homebrew, a good OS X package manager ..."
@@ -100,46 +155,85 @@ fi
 
 fancy_echo "Updating Homebrew formulas ..."
 brew update
+update_installed_list
+update_outdated_list
 
-fancy_echo "Installing Postgres, a good open source relational database ..."
-  brew_install_or_upgrade 'postgres'
+echo -n "Checking formulae: "
+for formula in "${brew_formulae[@]}"; do
+  echo -n "$formula..."
+  $(brew_install_or_upgrade $formula)
+done
 
-fancy_echo "Installing Redis, a good key-value database ..."
-  brew_install_or_upgrade 'redis'
+echo
+echo
+echo -n "Checking casks: "
+for cask in "${brew_casks[@]}"; do
+  echo -n "$cask..."
+  if ! brew cask list -1 | grep -Fqx "$cask"; then
+    brew cask install "$cask"
+  fi
+done
+brew linkapps
 
-fancy_echo "Installing The Silver Searcher (better than ack or grep) to search the contents of files ..."
-  brew_install_or_upgrade 'the_silver_searcher'
+# Post install steps
+fancy_echo "Starting Postgres ..."
+  brew_launchctl_restart postgresql
 
-fancy_echo "Installing vim from Homebrew to get the latest version ..."
-  brew_install_or_upgrade 'vim'
+echo " _____    _      "
+echo "|__  /___| |__   "
+echo "  / // __| '_ \  "
+echo " / /_\__ \ | | | "
+echo "/____|___/_| |_| "
+echo ""
+# Create ~/.zshrc if it doesn't exist
+if [[ ! -f "$HOME/.zshrc" ]]; then
+  touch "$HOME/.zshrc"
+fi
 
-fancy_echo "Installing ctags, to index files for vim tab completion of methods, classes, variables ..."
-  brew_install_or_upgrade 'ctags'
+# Create ~/bin home directory for local binaries and add to path
+if [[ ! -d "$HOME/.bin/" ]]; then
+  mkdir "$HOME/.bin"
+fi
+append_to_zshrc 'export PATH="$HOME/.bin:$PATH"'
 
-fancy_echo "Installing tmux, to save project state and switch between projects ..."
-  brew_install_or_upgrade 'tmux'
+brew_zsh_path=$(which zsh)
+# TODO: assert that this is the brew version: i.e. not /bin/zsh
+if ! grep -Fqs "$brew_zsh_path" "/etc/shells"; then
+  sudo sh -c "echo $brew_zsh_path >> /etc/shells"
+fi
 
-fancy_echo "Installing reattach-to-user-namespace, for copy-paste and RubyMotion compatibility with tmux ..."
-  brew_install_or_upgrade 'reattach-to-user-namespace'
+append_to_zshrc 'export ZSH_HIGHLIGHT_HIGHLIGHTERS_DIR=/usr/local/share/zsh-syntax-highlighting/highlighters'
+append_to_zshrc 'HELPDIR=/usr/local/share/zsh/help'
+append_to_zshrc 'unalias run-help'
+append_to_zshrc 'autoload run-help'
+append_to_zshrc 'fpath=(/usr/local/share/zsh-completions $fpath)'
+append_to_zshrc 'source /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh'
 
-fancy_echo "Installing ImageMagick, to crop and resize images ..."
-  brew_install_or_upgrade 'imagemagick'
+if [[ "$SHELL" != */zsh ]]; then
+  fancy_echo "Changing your shell to zsh ..."
+    chsh -s $(which zsh)
+fi
 
-fancy_echo "Installing QT, used by Capybara Webkit for headless Javascript integration testing ..."
-  brew_install_or_upgrade 'qt'
+# Installing oh-my-zsh
+if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
+  fancy_echo "Installing Oh My Zsh"
+  curl -L http://install.ohmyz.sh | sh
+fi
+append_to_zshrc 'plugins=(autoenv brew bundler capistrano coffee colored-man colorize cp gem git-extras git github history knife mvn node npm osx pip postgres pow powify python rails rake redis-cli ruby rvm sublime themes vagrant virtualenv virtualenvwrapper)'
 
-fancy_echo "Installing watch, to execute a program periodically and show the output ..."
-  brew_install_or_upgrade 'watch'
-
-fancy_echo "Installing GitHub CLI client ..."
-  brew_install_or_upgrade 'gh'
-
+echo "  _   _           _         _      "
+echo " | \ | | ___   __| | ___   (_)___  "
+echo " |  \| |/ _ \ / _\` |/ _ \  | / __| "
+echo " | |\  | (_) | (_| |  __/_ | \__ \ "
+echo " |_| \_|\___/ \__,_|\___(_)/ |___/ "
+echo "                         |__/      "
 node_version="0.10"
 
 fancy_echo "Installing NVM, Node.js, and NPM, for running apps and installing JavaScript packages ..."
   brew_install_or_upgrade 'nvm'
 
   append_to_zshrc 'export PATH="$PATH:/usr/local/lib/node_modules"'
+  append_to_zshrc 'export NVM_DIR=~/.nvm'
   append_to_zshrc 'source $(brew --prefix nvm)/nvm.sh' 1
 
   source $(brew --prefix nvm)/nvm.sh
@@ -148,40 +242,34 @@ fancy_echo "Installing NVM, Node.js, and NPM, for running apps and installing Ja
   fancy_echo "Setting $node_version as the global default nodejs..."
   nvm alias default "$node_version"
 
-fancy_echo "Starting Postgres ..."
-  brew_launchctl_restart postgresql
+  # TODO: skip installed packages
+  # installed_pkgs=$(npm list --parseable=true --global=true)
+  fancy_echo "Installing Standard Npm packages ..."
+  echo -n "Checking packages: "
+  for pkg in "${npm_packages[@]}"; do
+    echo -n "$pkg..."
+    npm update -g $pkg
+  done
 
-if [[ ! -d "$HOME/.rbenv" ]]; then
-  fancy_echo "Installing rbenv, to change Ruby versions ..."
-    git clone https://github.com/sstephenson/rbenv.git ~/.rbenv
+echo
+echo "  ____        _            "
+echo " |  _ \ _   _| |__  _   _  "
+echo " | |_) | | | | '_ \| | | | "
+echo " |  _ <| |_| | |_) | |_| | "
+echo " |_| \_\\__,_|_.__/ \__, | "
+echo "                    |___/  "
+append_to_zshrc 'export PATH="$HOME/.rbenv/bin:$PATH"'
+append_to_zshrc 'if which rbenv > /dev/null; then eval "$(rbenv init - zsh)"; fi'
 
-    append_to_zshrc 'export PATH="$HOME/.rbenv/bin:$PATH"'
-    append_to_zshrc 'eval "$(rbenv init - zsh --no-rehash)"' 1
+export PATH="$HOME/.rbenv/bin:$PATH"
+eval "$(rbenv init - zsh)"
 
-    export PATH="$HOME/.rbenv/bin:$PATH"
-    eval "$(rbenv init - zsh)"
-fi
+ruby_version=$(ruby-build --definitions | egrep "^\d+\.\d+\.\d+(\-p\d+)?$" | sort |tail -n 1)
 
-if [[ ! -d "$HOME/.rbenv/plugins/rbenv-gem-rehash" ]]; then
-  fancy_echo "Installing rbenv-gem-rehash so the shell automatically picks up binaries after installing gems with binaries..."
-    git clone https://github.com/sstephenson/rbenv-gem-rehash.git \
-      ~/.rbenv/plugins/rbenv-gem-rehash
-fi
-
-if [[ ! -d "$HOME/.rbenv/plugins/ruby-build" ]]; then
-  fancy_echo "Installing ruby-build, to install Rubies ..."
-    git clone https://github.com/sstephenson/ruby-build.git \
-      ~/.rbenv/plugins/ruby-build
-fi
-
-fancy_echo "Upgrading and linking OpenSSL ..."
-  brew_install_or_upgrade 'openssl'
-  brew unlink openssl && brew link openssl --force
-
-ruby_version="$(curl -sSL http://ruby.thoughtbot.com/latest)"
-
-fancy_echo "Installing Ruby $ruby_version ..."
+if [[ -z $(rbenv versions --bare | fgrep $ruby_version) ]]; then
+  fancy_echo "Installing Ruby $ruby_version ..."
   rbenv install -s "$ruby_version"
+fi
 
 fancy_echo "Setting $ruby_version as global default Ruby ..."
   rbenv global "$ruby_version"
@@ -190,38 +278,63 @@ fancy_echo "Setting $ruby_version as global default Ruby ..."
 fancy_echo "Updating to latest Rubygems version ..."
   gem update --system
 
-fancy_echo "Installing Bundler to install project-specific Ruby gems ..."
-  gem install bundler --no-document --pre
+installed_gems=$(gem list --no-versions)
+fancy_echo "Installing Standard Rubygems ..."
+echo -n "Checking gems: "
+for gem in "${rubygems[@]}"; do
+  echo -n "$gem..."
+  if [[ ! -z $(echo "$installed_gems" | grep -Fqx "$1") ]]; then
+    gem install $gem
+    echo "  Installed $@"
+    installed_gems=$(gem list --no-versions)
+  fi
+done
+
+fancy_echo "Updating outdated gems"
+gem update
 
 fancy_echo "Configuring Bundler for faster, parallel gem installation ..."
   number_of_cores=$(sysctl -n hw.ncpu)
   bundle config --global jobs $((number_of_cores - 1))
 
-fancy_echo "Installing Suspenders, thoughtbot's Rails template ..."
-  gem install suspenders --no-document
+echo " ____        _   _                  "
+echo "|  _ \ _   _| |_| |__   ___  _ __   "
+echo "| |_) | | | | __| '_ \ / _ \| '_ \  "
+echo "|  __/| |_| | |_| | | | (_) | | | | "
+echo "|_|    \__, |\__|_| |_|\___/|_| |_| "
+echo "       |___/                        "
+pip install --upgrade setuptools
+pip install --upgrade pip
 
-fancy_echo "Installing Parity, shell commands for development, staging, and
-production parity ..."
-  gem install parity --no-document
+append_to_zshrc 'if which pyenv > /dev/null; then eval "$(pyenv init -)"; fi'
+append_to_zshrc 'if which pyenv-virtualenv-init > /dev/null; then eval "$(pyenv virtualenv-init -)"; fi'
 
-fancy_echo "Installing Heroku CLI client ..."
-  brew_install_or_upgrade 'heroku-toolbelt'
+installed_eggs=$(pip list)
+outdated_eggs=$(pip list -o)
+fancy_echo "Installing Standard Python eggs ..."
+echo -n "Checking eggs: "
+for egg in "${python_eggs[@]}"; do
+  echo -n "$egg..."
+  if [[ -z $(echo "$installed_eggs" | grep -Fqx "$egg") ]]; then
+    if [[ -n $(echo "$outdated_eggs" | grep -Fqx "$egg") ]]; then
+      pip install --upgrade "$@"
+      echo "  Upgraded $@"
+      outdated_eggs=$(pip list -o)
+    fi
+  else
+    pip install "$@"
+    echo "  Installed $@"
+    installed_eggs=$(pip list)
+  fi
+done
 
-fancy_echo "Installing the heroku-config plugin to pull config variables locally to be used as ENV variables ..."
-  heroku plugins:install https://github.com/ddollar/heroku-config.git
-
-fancy_echo "Installing foreman ..."
-  curl -sLo /tmp/foreman.pkg http://assets.foreman.io/foreman/foreman.pkg && \
-  sudo installer -pkg /tmp/foreman.pkg -tgt /
-
-if ! command -v rcup >/dev/null; then
-  fancy_echo "Installing rcm, to manage your dotfiles ..."
-    brew tap thoughtbot/formulae
-    brew_install_or_upgrade 'rcm'
-else
-  fancy_echo "rcm already installed. Skipping ..."
-fi
-
+echo
+echo " _   _                    _       _     _ _ _   _                  "
+echo "| | | |___  ___ _ __     / \   __| | __| (_) |_(_) ___  _ __  ___  "
+echo "| | | / __|/ _ \ '__|   / _ \ / _\` |/ _\` | | __| |/ _ \| '_ \/ __| "
+echo "| |_| \__ \  __/ |     / ___ \ (_| | (_| | | |_| | (_) | | | \__ \ "
+echo " \___/|___/\___|_|    /_/   \_\__,_|\__,_|_|\__|_|\___/|_| |_|___/ "
+echo
 fancy_echo "Installing your personal additions from ~/.laptop.local ..."
   if [[ -f ~/.laptop.local ]]; then
     source ~/.laptop.local
