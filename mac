@@ -28,7 +28,7 @@ brew_formulae=(postgresql redis the_silver_searcher vim ctags tmux
 brew_casks=(adium anvil atom audacity battery-guardian box-sync dash
             firefox gimp github gitx-rowanj google-chrome intellij-idea iterm2
             java launchrocket limechat livereload protege skitch skype vagrant
-            vagrant-manager virtualbox)
+            vagrant-manager virtualbox xquartz)
 # TODO: caffeine is failing to download today
 
 npm_packages=(grunt-cli bower protractor mocha styledocco chai chai-as-promised
@@ -167,11 +167,7 @@ brew update
 update_installed_list
 update_outdated_list
 
-echo -n "Checking formulae: "
-for formula in "${brew_formulae[@]}"; do
-  echo -n "$formula..."
-  brew_install_or_upgrade $formula
-done
+fancy_echo "Checking if brew-cask is installed ..."
 if containsElement "brew-cask" "${installed[@]}"; then
   if containsElement "brew-cask" "${outdated[@]}"; then
     brew upgrade caskroom/cask/brew-cask
@@ -182,13 +178,20 @@ fi
 
 echo
 echo
-echo -n "Checking casks: "
+echo -n "Installing casks: "
 for cask in "${brew_casks[@]}"; do
   echo -n "$cask..."
   if ! brew cask list -1 | grep -Fqx "$cask"; then
     brew cask install "$cask"
   fi
 done
+
+echo -n "Installing/Updating brew formulae: "
+for formula in "${brew_formulae[@]}"; do
+  echo -n "$formula..."
+  brew_install_or_upgrade $formula
+done
+
 brew linkapps
 
 # Post install steps
