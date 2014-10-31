@@ -179,7 +179,7 @@ if containsElement "brew-cask" "${installed[@]}"; then
     brew upgrade caskroom/cask/brew-cask
   fi
 else
-  brew upgrade caskroom/cask/brew-cask
+  brew install caskroom/cask/brew-cask
 fi
 
 echo
