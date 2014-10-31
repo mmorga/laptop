@@ -13,8 +13,8 @@
 brew_formulae=(postgresql redis the_silver_searcher vim ctags tmux
                reattach-to-user-namespace imagemagick qt watch gh nvm rbenv
                rbenv-gem-rehash ruby-build colordiff curl docker elasticsearch
-               erlang git go graphviz inkscape mackup mercurial mysql pandoc
-               perl phantomjs pyenv-virtualenv pyenv-virtualenvwrapper python
+               erlang go graphviz inkscape mackup mercurial mysql pandoc
+               phantomjs pyenv-virtualenv pyenv-virtualenvwrapper python
                rbenv-binstubs rbenv-bundler rbenv-gem-rehash ruby-build
                selenium-server-standalone wget xclip zsh zsh-completions
                zsh-syntax-highlighting)
@@ -25,9 +25,9 @@ brew_formulae=(postgresql redis the_silver_searcher vim ctags tmux
 # | |_) | | |  __/\ V  V /  | (_| (_| \__ \   <\__ \
 # |_.__/|_|  \___| \_/\_/    \___\__,_|___/_|\_\___/
 # These are mac apps that brew cask can manage
-brew_casks=(adium anvil atom audacity battery-guardian box-sync dash
-            firefox gimp github gitx-rowanj google-chrome intellij-idea iterm2
-            java launchrocket limechat livereload protege skitch skype vagrant
+brew_casks=(adium anvil atom audacity battery-guardian box-sync caffeine firefox
+            gimp gitx-rowanj google-chrome intellij-idea-ce iterm2 java
+            launchrocket limechat livereload mactex protege skitch skype vagrant
             vagrant-manager virtualbox xquartz)
 # TODO: caffeine is failing to download today
 
@@ -144,6 +144,11 @@ trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
 
 set -e
 
+# Create ~/bin home directory for local binaries and add to path
+if [[ ! -d "$HOME/bin/" ]]; then
+  mkdir "$HOME/bin"
+fi
+
 echo "  _   _                      _                         "
 echo " | | | | ___  _ __ ___   ___| |__  _ __ _____      __  "
 echo " | |_| |/ _ \| '_ \` _ \ / _ \ '_ \| '__/ _ \ \ /\ / / "
@@ -155,18 +160,19 @@ if ! command -v brew >/dev/null; then
   fancy_echo "Installing Homebrew, a good OS X package manager ..."
     ruby <(curl -fsS https://raw.githubusercontent.com/Homebrew/install/master/install)
 
-    append_to_zshrc '# recommended by brew doctor'
-    append_to_zshrc 'export PATH="/usr/local/bin:$PATH"' 1
-    export PATH="/usr/local/bin:$PATH"
 else
   fancy_echo "Homebrew already installed. Skipping ..."
 fi
+
+# TODO: This is already in the zshrc template append_to_zshrc 'export PATH="/usr/local/bin:$PATH"' 1
+export PATH="/usr/local/bin:$PATH"
 
 fancy_echo "Updating Homebrew formulas ..."
 brew update
 update_installed_list
 update_outdated_list
 
+brew_install_or_upgrade "git"
 fancy_echo "Checking if brew-cask is installed ..."
 if containsElement "brew-cask" "${installed[@]}"; then
   if containsElement "brew-cask" "${outdated[@]}"; then
@@ -179,6 +185,7 @@ fi
 echo
 echo
 echo -n "Installing casks: "
+export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 for cask in "${brew_casks[@]}"; do
   echo -n "$cask..."
   if ! brew cask list -1 | grep -Fqx "$cask"; then
@@ -191,6 +198,7 @@ for formula in "${brew_formulae[@]}"; do
   echo -n "$formula..."
   brew_install_or_upgrade $formula
 done
+echo
 
 brew linkapps
 
@@ -204,29 +212,12 @@ echo "  / // __| '_ \  "
 echo " / /_\__ \ | | | "
 echo "/____|___/_| |_| "
 echo ""
-# Create ~/.zshrc if it doesn't exist
-if [[ ! -f "$HOME/.zshrc" ]]; then
-  touch "$HOME/.zshrc"
-fi
-
-# Create ~/bin home directory for local binaries and add to path
-if [[ ! -d "$HOME/.bin/" ]]; then
-  mkdir "$HOME/.bin"
-fi
-append_to_zshrc 'export PATH="$HOME/.bin:$PATH"'
 
 brew_zsh_path=$(which zsh)
 # TODO: assert that this is the brew version: i.e. not /bin/zsh
 if ! grep -Fqs "$brew_zsh_path" "/etc/shells"; then
   sudo sh -c "echo $brew_zsh_path >> /etc/shells"
 fi
-
-append_to_zshrc 'export ZSH_HIGHLIGHT_HIGHLIGHTERS_DIR=/usr/local/share/zsh-syntax-highlighting/highlighters'
-append_to_zshrc 'HELPDIR=/usr/local/share/zsh/help'
-append_to_zshrc 'unalias run-help'
-append_to_zshrc 'autoload run-help'
-append_to_zshrc 'fpath=(/usr/local/share/zsh-completions $fpath)'
-append_to_zshrc 'source /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh'
 
 if [[ "$SHELL" != */zsh ]]; then
   fancy_echo "Changing your shell to zsh ..."
@@ -237,8 +228,38 @@ fi
 if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
   fancy_echo "Installing Oh My Zsh"
   curl -L http://install.ohmyz.sh | sh
+
 fi
-append_to_zshrc 'plugins=(autoenv brew bundler capistrano coffee colored-man colorize cp gem git-extras git github history knife mvn node npm osx pip postgres pow powify python rails rake redis-cli ruby rvm sublime themes vagrant virtualenv virtualenvwrapper)'
+
+if [[ -f "$HOME/.zshrc" ]]; then
+  fancy_echo "Making a backup copy of your .zshrc to .zshrc-backup"
+  cp ~/.zshrc ~/.zshrc-backup
+fi
+
+cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc
+
+# Replace the plugins line in the .zshrc template with this one
+sed -E "s/plugins=\(git\)/plugins=(atom autoenv bower brew brew-cask bundler colored-man colorize docker gem git git-prompt jira jsontools node npm postgres pow rails rand-quote redis-cli sublime taskwarrior themes vagrant virtualenv virtualenvwrapper)/" ~/.zshrc > ~/zshrc-tmp
+cp ~/zshrc-tmp ~/.zshrc
+rm ~/zshrc-tmp
+
+# Append after the end of the template
+append_to_zshrc '# Used for compile flags for gems' 1
+append_to_zshrc 'export ARCHFLAGS="-arch x86_64"'
+append_to_zshrc 'export MANPATH="$MANPATH:/usr/local/opt/erlang/lib/erlang/man"'
+append_to_zshrc 'export HOMEBREW_CASK_OPTS="--appdir=/Applications"'
+
+append_to_zshrc '# Zsh syntax highlighting' 1
+append_to_zshrc 'export ZSH_HIGHLIGHT_HIGHLIGHTERS_DIR=/usr/local/share/zsh-syntax-highlighting/highlighters'
+append_to_zshrc 'source /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh'
+
+append_to_zshrc '# Zsh completions' 1
+append_to_zshrc 'fpath=(/usr/local/share/zsh-completions $fpath)'
+
+append_to_zshrc '# Zsh help' 1
+append_to_zshrc 'HELPDIR=/usr/local/share/zsh/help'
+append_to_zshrc 'unalias run-help'
+append_to_zshrc 'autoload run-help'
 
 echo "  _   _           _         _      "
 echo " | \ | | ___   __| | ___   (_)___  "
@@ -252,7 +273,10 @@ fancy_echo "Installing NVM, Node.js, and NPM, for running apps and installing Ja
   brew_install_or_upgrade 'nvm'
 
   append_to_zshrc 'export PATH="$PATH:/usr/local/lib/node_modules"'
-  append_to_zshrc 'export NVM_DIR=~/.nvm'
+  if [[ ! -d "$HOME/.nvm/" ]]; then
+    mkdir "$HOME/.nvm"
+  fi
+  append_to_zshrc 'export NVM_DIR="$HOME/.nvm"'
   append_to_zshrc 'source $(brew --prefix nvm)/nvm.sh' 1
 
   source $(brew --prefix nvm)/nvm.sh
@@ -277,10 +301,7 @@ echo " | |_) | | | | '_ \| | | | "
 echo " |  _ <| |_| | |_) | |_| | "
 echo " |_| \_\\__,_|_.__/ \__, | "
 echo "                    |___/  "
-append_to_zshrc 'export PATH="$HOME/.rbenv/bin:$PATH"'
-append_to_zshrc 'if which rbenv > /dev/null; then eval "$(rbenv init - zsh)"; fi'
-
-export PATH="$HOME/.rbenv/bin:$PATH"
+append_to_zshrc 'eval "$(rbenv init - zsh)"'
 eval "$(rbenv init - zsh)"
 
 ruby_version=$(ruby-build --definitions | egrep "^\d+\.\d+\.\d+(\-p\d+)?$" | sort |tail -n 1)
@@ -325,8 +346,8 @@ echo "       |___/                        "
 pip install --upgrade setuptools
 pip install --upgrade pip
 
-append_to_zshrc 'if which pyenv > /dev/null; then eval "$(pyenv init -)"; fi'
-append_to_zshrc 'if which pyenv-virtualenv-init > /dev/null; then eval "$(pyenv virtualenv-init -)"; fi'
+append_to_zshrc 'eval "$(pyenv init -)"'
+append_to_zshrc 'eval "$(pyenv virtualenv-init -)"'
 
 installed_eggs=$(pip list)
 outdated_eggs=$(pip list -o)
