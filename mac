@@ -13,7 +13,7 @@
 brew_formulae=(postgresql redis the_silver_searcher vim ctags tmux
                reattach-to-user-namespace imagemagick qt watch gh nvm rbenv
                rbenv-gem-rehash ruby-build colordiff curl docker elasticsearch
-               erlang go graphviz inkscape mackup mercurial mysql pandoc
+               erlang go graphviz mackup mercurial mysql pandoc
                phantomjs pyenv-virtualenv pyenv-virtualenvwrapper python
                rbenv-binstubs rbenv-bundler rbenv-gem-rehash ruby-build
                selenium-server-standalone wget xclip zsh zsh-completions
@@ -26,7 +26,7 @@ brew_formulae=(postgresql redis the_silver_searcher vim ctags tmux
 # |_.__/|_|  \___| \_/\_/    \___\__,_|___/_|\_\___/
 # These are mac apps that brew cask can manage
 brew_casks=(adium anvil atom audacity battery-guardian box-sync caffeine firefox
-            gimp gitx-rowanj google-chrome intellij-idea-ce iterm2 java
+            gimp gitx-rowanj google-chrome inkscape intellij-idea-ce iterm2 java
             launchrocket limechat livereload mactex protege skitch skype vagrant
             vagrant-manager virtualbox xquartz)
 # TODO: caffeine is failing to download today
