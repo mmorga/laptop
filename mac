@@ -10,12 +10,11 @@
 # | |_) | | |  __/\ V  V /  |  _| (_) | |  | | | | | | |_| | | (_| |  __/
 # |_.__/|_|  \___| \_/\_/   |_|  \___/|_|  |_| |_| |_|\__,_|_|\__,_|\___|
 # These are the apps installed by Homebrew
-brew_formulae=(postgresql redis the_silver_searcher vim ctags tmux
+brew_formulae=(postgresql redis the_silver_searcher vim ctags go tmux
                reattach-to-user-namespace imagemagick qt watch gh nvm rbenv
-               rbenv-gem-rehash ruby-build colordiff curl docker elasticsearch
-               erlang go graphviz mackup mercurial mysql pandoc
+               rbenv-bundler rbenv-gem-rehash ruby-build colordiff curl docker
+               elasticsearch erlang go graphviz mackup mercurial mysql pandoc
                phantomjs pyenv-virtualenv pyenv-virtualenvwrapper python
-               rbenv-binstubs rbenv-bundler rbenv-gem-rehash ruby-build
                selenium-server-standalone wget xclip zsh zsh-completions
                zsh-syntax-highlighting)
 
@@ -239,7 +238,7 @@ fi
 cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc
 
 # Replace the plugins line in the .zshrc template with this one
-sed -E "s/plugins=\(git\)/plugins=(atom autoenv bower brew brew-cask bundler colored-man colorize docker gem git git-prompt jira jsontools node npm postgres pow rails rand-quote redis-cli sublime taskwarrior themes vagrant virtualenv virtualenvwrapper)/" ~/.zshrc > ~/zshrc-tmp
+sed -E "s/plugins=\(git\)/plugins=(autoenv brew bundler colored-man gem git git-prompt go golang jira node npm pow pyenv rails rbenv vagrant virtualenv virtualenvwrapper)/" ~/.zshrc > ~/zshrc-tmp
 cp ~/zshrc-tmp ~/.zshrc
 rm ~/zshrc-tmp
 
@@ -301,7 +300,6 @@ echo " | |_) | | | | '_ \| | | | "
 echo " |  _ <| |_| | |_) | |_| | "
 echo " |_| \_\\__,_|_.__/ \__, | "
 echo "                    |___/  "
-append_to_zshrc 'eval "$(rbenv init - zsh)"'
 eval "$(rbenv init - zsh)"
 
 ruby_version=$(ruby-build --definitions | egrep "^\d+\.\d+\.\d+(\-p\d+)?$" | sort |tail -n 1)
@@ -346,9 +344,6 @@ echo "       |___/                        "
 pip install --upgrade setuptools
 pip install --upgrade pip
 
-append_to_zshrc 'eval "$(pyenv init -)"'
-append_to_zshrc 'eval "$(pyenv virtualenv-init -)"'
-
 installed_eggs=$(pip list)
 outdated_eggs=$(pip list -o)
 fancy_echo "Installing Standard Python eggs ..."
@@ -367,6 +362,17 @@ for egg in "${python_eggs[@]}"; do
     installed_eggs=$(pip list)
   fi
 done
+
+echo "  ____         "
+echo " / ___| ___    "
+echo "| |  _ / _ \   "
+echo "| |_| | (_) |  "
+echo " \____|\___/   "
+
+append_to_zshrc '# Go Programming Language'
+append_to_zshrc 'export PATH=$PATH:/usr/local/opt/go/libexec/bin'
+append_to_zshrc 'export PATH="$PATH:$GOPATH/bin"'
+append_to_zshrc 'export GOPATH="$HOME/go"'
 
 echo
 echo " _   _                    _       _     _ _ _   _                  "
