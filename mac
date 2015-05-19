@@ -15,7 +15,7 @@ brew_formulae=(postgresql redis the_silver_searcher vim ctags go tmux
                rbenv-bundler rbenv-gem-rehash ruby-build colordiff curl docker
                elasticsearch erlang go graphviz mackup mercurial mysql pandoc
                phantomjs pyenv-virtualenv pyenv-virtualenvwrapper python
-               selenium-server-standalone wget xclip zsh zsh-completions
+               selenium-server-standalone wget homebrew/x11/xclip zsh zsh-completions
                zsh-syntax-highlighting)
 
 #  _                                       _
