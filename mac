@@ -24,10 +24,10 @@ brew_formulae=(postgresql redis the_silver_searcher vim ctags go tmux
 # | |_) | | |  __/\ V  V /  | (_| (_| \__ \   <\__ \
 # |_.__/|_|  \___| \_/\_/    \___\__,_|___/_|\_\___/
 # These are mac apps that brew cask can manage
-brew_casks=(adium anvil atom audacity battery-guardian box-sync caffeine firefox
+brew_casks=(xquartz adium anvil atom audacity battery-guardian box-sync caffeine firefox
             gimp rowanj-gitx google-chrome inkscape intellij-idea-ce iterm2 java
             launchrocket limechat livereload mactex protege skitch skype vagrant
-            vagrant-manager virtualbox xquartz)
+            vagrant-manager virtualbox)
 # TODO: caffeine is failing to download today
 
 npm_packages=(grunt-cli bower protractor mocha styledocco chai chai-as-promised
